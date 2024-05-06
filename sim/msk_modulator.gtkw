@@ -1,0 +1,92 @@
+[*]
+[*] GTKWave Analyzer v3.4.0 (w)1999-2022 BSI
+[*] Mon Apr 29 06:16:44 2024
+[*]
+[dumpfile] "/Users/nonlinear/Dev/msk/nco.ghw"
+[dumpfile_mtime] "Mon Apr 29 06:16:37 2024"
+[dumpfile_size] 23001147
+[savefile] "/Users/nonlinear/Dev/msk/msk_modulator.gtkw"
+[timestart] 320900000000
+[size] 1512 837
+[pos] -1 -1
+*-36.580696 175140000000 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+[markername] AA
+[markername] BB
+[markername] CC
+[markername] DD
+[markername] EE
+[markername] FF
+[markername] GG
+[markername] HH
+[markername] II
+[markername] JJ
+[markername] KK
+[markername] LL
+[markername] MM
+[markername] NN
+[markername] OO
+[markername] PP
+[markername] QQ
+[markername] RR
+[markername] SS
+[markername] TT
+[markername] UU
+[markername] VV
+[markername] WW
+[markername] XX
+[markername] YY
+[markername] ZZ
+[treeopen] top.
+[treeopen] top.msk_modulator.
+[sst_width] 253
+[signals_width] 266
+[sst_expanded] 1
+[sst_vpaned_height] 292
+@28
+top.msk_modulator.clk
+top.msk_modulator.init
+top.msk_modulator.tx_req
+top.msk_modulator.tx_req_d
+#{top.msk_modulator.tx_data[1:0]} top.msk_modulator.tx_data[1] top.msk_modulator.tx_data[0]
+#{top.msk_modulator.tx_data_reg[1:0]} top.msk_modulator.tx_data_reg[1] top.msk_modulator.tx_data_reg[0]
+top.msk_modulator.tx_enc_even
+@29
+top.msk_modulator.tx_enc_odd
+@28
+top.msk_modulator.tx_enc_odd_delay
+@10420
+#{top.msk_modulator.mod_phase[31:0]} top.msk_modulator.mod_phase[31] top.msk_modulator.mod_phase[30] top.msk_modulator.mod_phase[29] top.msk_modulator.mod_phase[28] top.msk_modulator.mod_phase[27] top.msk_modulator.mod_phase[26] top.msk_modulator.mod_phase[25] top.msk_modulator.mod_phase[24] top.msk_modulator.mod_phase[23] top.msk_modulator.mod_phase[22] top.msk_modulator.mod_phase[21] top.msk_modulator.mod_phase[20] top.msk_modulator.mod_phase[19] top.msk_modulator.mod_phase[18] top.msk_modulator.mod_phase[17] top.msk_modulator.mod_phase[16] top.msk_modulator.mod_phase[15] top.msk_modulator.mod_phase[14] top.msk_modulator.mod_phase[13] top.msk_modulator.mod_phase[12] top.msk_modulator.mod_phase[11] top.msk_modulator.mod_phase[10] top.msk_modulator.mod_phase[9] top.msk_modulator.mod_phase[8] top.msk_modulator.mod_phase[7] top.msk_modulator.mod_phase[6] top.msk_modulator.mod_phase[5] top.msk_modulator.mod_phase[4] top.msk_modulator.mod_phase[3] top.msk_modulator.mod_phase[2] top.msk_modulator.mod_phase[1] top.msk_modulator.mod_phase[0]
+@28
+top.msk_modulator.tclk_even
+@10420
+#{top.msk_modulator.mod_cos_d[11:0]} top.msk_modulator.mod_cos_d[11] top.msk_modulator.mod_cos_d[10] top.msk_modulator.mod_cos_d[9] top.msk_modulator.mod_cos_d[8] top.msk_modulator.mod_cos_d[7] top.msk_modulator.mod_cos_d[6] top.msk_modulator.mod_cos_d[5] top.msk_modulator.mod_cos_d[4] top.msk_modulator.mod_cos_d[3] top.msk_modulator.mod_cos_d[2] top.msk_modulator.mod_cos_d[1] top.msk_modulator.mod_cos_d[0]
+#{top.msk_modulator.tx_symbol_i[11:0]} top.msk_modulator.tx_symbol_i[11] top.msk_modulator.tx_symbol_i[10] top.msk_modulator.tx_symbol_i[9] top.msk_modulator.tx_symbol_i[8] top.msk_modulator.tx_symbol_i[7] top.msk_modulator.tx_symbol_i[6] top.msk_modulator.tx_symbol_i[5] top.msk_modulator.tx_symbol_i[4] top.msk_modulator.tx_symbol_i[3] top.msk_modulator.tx_symbol_i[2] top.msk_modulator.tx_symbol_i[1] top.msk_modulator.tx_symbol_i[0]
+@28
+top.msk_modulator.tclk_odd
+@10420
+#{top.msk_modulator.mod_sin_d[11:0]} top.msk_modulator.mod_sin_d[11] top.msk_modulator.mod_sin_d[10] top.msk_modulator.mod_sin_d[9] top.msk_modulator.mod_sin_d[8] top.msk_modulator.mod_sin_d[7] top.msk_modulator.mod_sin_d[6] top.msk_modulator.mod_sin_d[5] top.msk_modulator.mod_sin_d[4] top.msk_modulator.mod_sin_d[3] top.msk_modulator.mod_sin_d[2] top.msk_modulator.mod_sin_d[1] top.msk_modulator.mod_sin_d[0]
+#{top.msk_modulator.tx_symbol_q[11:0]} top.msk_modulator.tx_symbol_q[11] top.msk_modulator.tx_symbol_q[10] top.msk_modulator.tx_symbol_q[9] top.msk_modulator.tx_symbol_q[8] top.msk_modulator.tx_symbol_q[7] top.msk_modulator.tx_symbol_q[6] top.msk_modulator.tx_symbol_q[5] top.msk_modulator.tx_symbol_q[4] top.msk_modulator.tx_symbol_q[3] top.msk_modulator.tx_symbol_q[2] top.msk_modulator.tx_symbol_q[1] top.msk_modulator.tx_symbol_q[0]
+#{top.msk_modulator.carrier_phase[31:0]} top.msk_modulator.carrier_phase[31] top.msk_modulator.carrier_phase[30] top.msk_modulator.carrier_phase[29] top.msk_modulator.carrier_phase[28] top.msk_modulator.carrier_phase[27] top.msk_modulator.carrier_phase[26] top.msk_modulator.carrier_phase[25] top.msk_modulator.carrier_phase[24] top.msk_modulator.carrier_phase[23] top.msk_modulator.carrier_phase[22] top.msk_modulator.carrier_phase[21] top.msk_modulator.carrier_phase[20] top.msk_modulator.carrier_phase[19] top.msk_modulator.carrier_phase[18] top.msk_modulator.carrier_phase[17] top.msk_modulator.carrier_phase[16] top.msk_modulator.carrier_phase[15] top.msk_modulator.carrier_phase[14] top.msk_modulator.carrier_phase[13] top.msk_modulator.carrier_phase[12] top.msk_modulator.carrier_phase[11] top.msk_modulator.carrier_phase[10] top.msk_modulator.carrier_phase[9] top.msk_modulator.carrier_phase[8] top.msk_modulator.carrier_phase[7] top.msk_modulator.carrier_phase[6] top.msk_modulator.carrier_phase[5] top.msk_modulator.carrier_phase[4] top.msk_modulator.carrier_phase[3] top.msk_modulator.carrier_phase[2] top.msk_modulator.carrier_phase[1] top.msk_modulator.carrier_phase[0]
+#{top.msk_modulator.carrier_cos[11:0]} top.msk_modulator.carrier_cos[11] top.msk_modulator.carrier_cos[10] top.msk_modulator.carrier_cos[9] top.msk_modulator.carrier_cos[8] top.msk_modulator.carrier_cos[7] top.msk_modulator.carrier_cos[6] top.msk_modulator.carrier_cos[5] top.msk_modulator.carrier_cos[4] top.msk_modulator.carrier_cos[3] top.msk_modulator.carrier_cos[2] top.msk_modulator.carrier_cos[1] top.msk_modulator.carrier_cos[0]
+@20000
+-
+@10420
+#{top.msk_modulator.tx_sample_i[23:0]} top.msk_modulator.tx_sample_i[23] top.msk_modulator.tx_sample_i[22] top.msk_modulator.tx_sample_i[21] top.msk_modulator.tx_sample_i[20] top.msk_modulator.tx_sample_i[19] top.msk_modulator.tx_sample_i[18] top.msk_modulator.tx_sample_i[17] top.msk_modulator.tx_sample_i[16] top.msk_modulator.tx_sample_i[15] top.msk_modulator.tx_sample_i[14] top.msk_modulator.tx_sample_i[13] top.msk_modulator.tx_sample_i[12] top.msk_modulator.tx_sample_i[11] top.msk_modulator.tx_sample_i[10] top.msk_modulator.tx_sample_i[9] top.msk_modulator.tx_sample_i[8] top.msk_modulator.tx_sample_i[7] top.msk_modulator.tx_sample_i[6] top.msk_modulator.tx_sample_i[5] top.msk_modulator.tx_sample_i[4] top.msk_modulator.tx_sample_i[3] top.msk_modulator.tx_sample_i[2] top.msk_modulator.tx_sample_i[1] top.msk_modulator.tx_sample_i[0]
+@20000
+-
+@10420
+#{top.msk_modulator.carrier_sin[11:0]} top.msk_modulator.carrier_sin[11] top.msk_modulator.carrier_sin[10] top.msk_modulator.carrier_sin[9] top.msk_modulator.carrier_sin[8] top.msk_modulator.carrier_sin[7] top.msk_modulator.carrier_sin[6] top.msk_modulator.carrier_sin[5] top.msk_modulator.carrier_sin[4] top.msk_modulator.carrier_sin[3] top.msk_modulator.carrier_sin[2] top.msk_modulator.carrier_sin[1] top.msk_modulator.carrier_sin[0]
+@20000
+-
+@10420
+#{top.msk_modulator.tx_sample_q[23:0]} top.msk_modulator.tx_sample_q[23] top.msk_modulator.tx_sample_q[22] top.msk_modulator.tx_sample_q[21] top.msk_modulator.tx_sample_q[20] top.msk_modulator.tx_sample_q[19] top.msk_modulator.tx_sample_q[18] top.msk_modulator.tx_sample_q[17] top.msk_modulator.tx_sample_q[16] top.msk_modulator.tx_sample_q[15] top.msk_modulator.tx_sample_q[14] top.msk_modulator.tx_sample_q[13] top.msk_modulator.tx_sample_q[12] top.msk_modulator.tx_sample_q[11] top.msk_modulator.tx_sample_q[10] top.msk_modulator.tx_sample_q[9] top.msk_modulator.tx_sample_q[8] top.msk_modulator.tx_sample_q[7] top.msk_modulator.tx_sample_q[6] top.msk_modulator.tx_sample_q[5] top.msk_modulator.tx_sample_q[4] top.msk_modulator.tx_sample_q[3] top.msk_modulator.tx_sample_q[2] top.msk_modulator.tx_sample_q[1] top.msk_modulator.tx_sample_q[0]
+@20000
+-
+-
+@10420
+#{top.msk_modulator.tx_samples[23:0]} top.msk_modulator.tx_samples[23] top.msk_modulator.tx_samples[22] top.msk_modulator.tx_samples[21] top.msk_modulator.tx_samples[20] top.msk_modulator.tx_samples[19] top.msk_modulator.tx_samples[18] top.msk_modulator.tx_samples[17] top.msk_modulator.tx_samples[16] top.msk_modulator.tx_samples[15] top.msk_modulator.tx_samples[14] top.msk_modulator.tx_samples[13] top.msk_modulator.tx_samples[12] top.msk_modulator.tx_samples[11] top.msk_modulator.tx_samples[10] top.msk_modulator.tx_samples[9] top.msk_modulator.tx_samples[8] top.msk_modulator.tx_samples[7] top.msk_modulator.tx_samples[6] top.msk_modulator.tx_samples[5] top.msk_modulator.tx_samples[4] top.msk_modulator.tx_samples[3] top.msk_modulator.tx_samples[2] top.msk_modulator.tx_samples[1] top.msk_modulator.tx_samples[0]
+@20000
+-
+-
+[pattern_trace] 1
+[pattern_trace] 0
