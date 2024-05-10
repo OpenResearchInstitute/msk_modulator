@@ -16,8 +16,6 @@ ENTITY msk_modulator IS
 		clk 				: IN  std_logic;
 		init 				: IN  std_logic;
 
-		tclk_out			: OUT std_logic;
-
 		freq_word_tclk 		: IN  std_logic_vector(NCO_W -1 DOWNTO 0);
 		freq_word_f1 		: IN  std_logic_vector(NCO_W -1 DOWNTO 0);
 		freq_word_f2	 	: IN  std_logic_vector(NCO_W -1 DOWNTO 0);
@@ -59,7 +57,6 @@ BEGIN
 
 	tclk 	 	<= tclk_even OR tclk_odd;
 	tx_req 		<= tclk;
-	tclk_out 	<= tclk;
 
 	get_data_proc : PROCESS (clk)
 	BEGIN
@@ -144,6 +141,9 @@ BEGIN
 		init 			=> init,
 	
 		freq_word 		=> freq_word_tclk,
+
+		freq_adj_zero   => '0',
+		freq_adj_valid  => '0',
 		freq_adjust 	=> std_logic_vector(to_signed(0, NCO_W)),
 	
 		phase    		=> OPEN,
@@ -164,6 +164,9 @@ BEGIN
 		init 			=> init,
 	
 		freq_word 		=> freq_word_f1,
+
+		freq_adj_zero   => '0',
+		freq_adj_valid  => '0',
 		freq_adjust 	=> std_logic_vector(to_signed(0, NCO_W)),
 	
 		phase    		=> carrier_phase_f1,
@@ -200,6 +203,9 @@ BEGIN
 		init 			=> init,
 	
 		freq_word 		=> freq_word_f2,
+
+		freq_adj_zero   => '0',
+		freq_adj_valid  => '0',
 		freq_adjust 	=> std_logic_vector(to_signed(0, NCO_W)),
 	
 		phase    		=> carrier_phase_f2,
