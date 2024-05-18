@@ -23,6 +23,8 @@ ENTITY msk_modulator IS
 		tx_data 			: IN  std_logic;
 		tx_req 				: OUT std_logic;
 
+		ptt 			    : IN  std_logic;
+
 		tx_samples	 		: OUT std_logic_vector(SAMPLE_W -1 DOWNTO 0)
 	);
 END ENTITY msk_modulator;
@@ -118,10 +120,23 @@ BEGIN
 	BEGIN
 		IF clk'EVENT AND clk = '1' THEN
 
-			s1 <= resize(d_s1 * signed(carrier_cos_f1), SINUSOID_W);
-			s2 <= resize(d_s2 * signed(carrier_cos_f2), SINUSOID_W);
+			CASE d_s1 IS 
+				WHEN "11" 	=> s1 <= resize(NOT(signed(carrier_cos_f1)) + 1, SINUSOID_W); -- Multiply by -1
+				WHEN "01" 	=> s1 <= resize(signed(carrier_cos_f1), SINUSOID_W);  		  -- Multiply by +1
+				WHEN OTHERS => s1 <= (OTHERS => '0'); 									  -- Multiply by  0
+			END CASE;
 
-			tx_samples <= std_logic_vector(s1 + s2);
+			CASE d_s2 IS 
+				WHEN "11" 	=> s2 <= resize(NOT(signed(carrier_cos_f2)) + 1, SINUSOID_W); -- Multiply by -1
+				WHEN "01" 	=> s2 <= resize(signed(carrier_cos_f2), SINUSOID_W);  		  -- Multiply by +1
+				WHEN OTHERS => s2 <= (OTHERS => '0'); 									  -- Multiply by  0
+			END CASE;
+
+			IF ptt = '1' THEN
+				tx_samples <= std_logic_vector(s1 + s2);
+			ELSE
+				tx_samples <= (OTHERS => '0');
+			END IF;
 
 			IF init = '1' THEN
 				s1 <= (OTHERS => '0');
