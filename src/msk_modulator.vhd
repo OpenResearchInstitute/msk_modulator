@@ -31,6 +31,8 @@ END ENTITY msk_modulator;
 
 ARCHITECTURE rtl OF msk_modulator IS 
 
+	TYPE signed_array IS ARRAY(0 TO 2) OF signed(SINUSOID_W -1 DOWNTO 0);
+
 	SIGNAL tclk_even		: std_logic;
 	SIGNAL tclk_odd 		: std_logic;
 
@@ -40,6 +42,8 @@ ARCHITECTURE rtl OF msk_modulator IS
 	SIGNAL carrier_phase_f2	: std_logic_vector(NCO_W -1 DOWNTO 0);
 	SIGNAL carrier_cos_f1	: std_logic_vector(SINUSOID_W -1 DOWNTO 0);
 	SIGNAL carrier_cos_f2	: std_logic_vector(SINUSOID_W -1 DOWNTO 0);
+	SIGNAL carrier_cos_f1_dly 	: signed_array;
+	SIGNAL carrier_cos_f2_dly 	: signed_array;
 
 	SIGNAL tclk_dly 		: std_logic_vector(0 TO 3);
 
@@ -58,7 +62,7 @@ ARCHITECTURE rtl OF msk_modulator IS
 BEGIN
 
 	tclk 	 	<= tclk_even OR tclk_odd;
-	tx_req 		<= tclk;
+	tx_req 		<= tclk WHEN ptt = '1' ELSE '0';
 
 	get_data_proc : PROCESS (clk)
 	BEGIN
@@ -66,7 +70,7 @@ BEGIN
 
 			tclk_dly <= tclk & tclk_dly(0 TO 2);
 
-			IF tclk_dly(0) = '1' THEN
+			IF tclk_dly(0) = '1' AND ptt = '1' THEN
 				tx_data_reg	<= tx_data;
 			END IF;
 
@@ -117,19 +121,31 @@ BEGIN
 
 
 	carrier_mod_proc : PROCESS (clk)
+		VARIABLE v_cos_f1_d : signed(SINUSOID_W -1 DOWNTO 0);
+		VARIABLE v_cos_f1_n : signed(SINUSOID_W -1 DOWNTO 0);
+		VARIABLE v_cos_f2_d : signed(SINUSOID_W -1 DOWNTO 0);
+		VARIABLE v_cos_f2_n : signed(SINUSOID_W -1 DOWNTO 0);
 	BEGIN
 		IF clk'EVENT AND clk = '1' THEN
 
+			v_cos_f1_d 	:= carrier_cos_f1_dly(2);
+			v_cos_f1_n 	:= NOT(carrier_cos_f1_dly(2)) + 1;
+			v_cos_f2_d 	:= carrier_cos_f2_dly(2);
+			v_cos_f2_n 	:= NOT(carrier_cos_f2_dly(2)) + 1;
+
+			carrier_cos_f1_dly 	<= signed(carrier_cos_f1) & carrier_cos_f1_dly(0 TO 1);
+			carrier_cos_f2_dly 	<= signed(carrier_cos_f2) & carrier_cos_f2_dly(0 TO 1);
+
 			CASE d_s1 IS 
-				WHEN "11" 	=> s1 <= resize(NOT(signed(carrier_cos_f1)) + 1, SINUSOID_W); -- Multiply by -1
-				WHEN "01" 	=> s1 <= resize(signed(carrier_cos_f1), SINUSOID_W);  		  -- Multiply by +1
-				WHEN OTHERS => s1 <= (OTHERS => '0'); 									  -- Multiply by  0
+				WHEN "11" 	=> s1 <= resize(v_cos_f1_n, SINUSOID_W); 	-- Multiply by -1
+				WHEN "01" 	=> s1 <= resize(v_cos_f1_d, SINUSOID_W);	-- Multiply by +1
+				WHEN OTHERS => s1 <= (OTHERS => '0'); 					-- Multiply by  0
 			END CASE;
 
 			CASE d_s2 IS 
-				WHEN "11" 	=> s2 <= resize(NOT(signed(carrier_cos_f2)) + 1, SINUSOID_W); -- Multiply by -1
-				WHEN "01" 	=> s2 <= resize(signed(carrier_cos_f2), SINUSOID_W);  		  -- Multiply by +1
-				WHEN OTHERS => s2 <= (OTHERS => '0'); 									  -- Multiply by  0
+				WHEN "11" 	=> s2 <= resize(v_cos_f2_n, SINUSOID_W); 	-- Multiply by -1
+				WHEN "01" 	=> s2 <= resize(v_cos_f2_d, SINUSOID_W);	-- Multiply by +1
+				WHEN OTHERS => s2 <= (OTHERS => '0');					-- Multiply by  0
 			END CASE;
 
 			IF ptt = '1' THEN
