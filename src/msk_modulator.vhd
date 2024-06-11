@@ -25,6 +25,8 @@ ENTITY msk_modulator IS
 
 		ptt 			    : IN  std_logic;
 
+		tx_enable 			: IN  std_logic;
+		tx_valid 			: IN  std_logic;
 		tx_samples	 		: OUT std_logic_vector(SAMPLE_W -1 DOWNTO 0)
 	);
 END ENTITY msk_modulator;
@@ -32,6 +34,8 @@ END ENTITY msk_modulator;
 ARCHITECTURE rtl OF msk_modulator IS 
 
 	TYPE signed_array IS ARRAY(0 TO 2) OF signed(SINUSOID_W -1 DOWNTO 0);
+
+	SIGNAL tx_init 			: std_logic;
 
 	SIGNAL tclk_even		: std_logic;
 	SIGNAL tclk_odd 		: std_logic;
@@ -61,6 +65,8 @@ ARCHITECTURE rtl OF msk_modulator IS
 
 BEGIN
 
+	tx_init 	<= init OR NOT tx_enable;
+
 	tclk 	 	<= tclk_even OR tclk_odd;
 	tx_req 		<= tclk WHEN ptt = '1' ELSE '0';
 
@@ -74,7 +80,7 @@ BEGIN
 				tx_data_reg	<= tx_data;
 			END IF;
 
-			IF init = '1' THEN 
+			IF tx_init = '1' THEN 
 				tclk_dly 	<= (OTHERS => '0');
 				tx_data_reg	<= '0';
 			END IF;
@@ -109,7 +115,7 @@ BEGIN
 
 			END IF;
 
-			IF init = '1' THEN
+			IF tx_init = '1' THEN
 				b_n 	<= '0';
 				d_dly 	<= "001";
 				d_s1 	<= "00";
@@ -149,12 +155,12 @@ BEGIN
 			END CASE;
 
 			IF ptt = '1' THEN
-				tx_samples <= std_logic_vector(s1 + s2);
+				tx_samples <= std_logic_vector(resize(s1 + s2, SAMPLE_W));
 			ELSE
 				tx_samples <= (OTHERS => '0');
 			END IF;
 
-			IF init = '1' THEN
+			IF tx_init = '1' THEN
 				s1 <= (OTHERS => '0');
 				s2 <= (OTHERS => '0');
 				tx_samples <= (OTHERS => '0');
@@ -169,7 +175,7 @@ BEGIN
 	)
 	PORT MAP(
 		clk 			=> clk,
-		init 			=> init,
+		init 			=> tx_init,
 	
 		freq_word 		=> freq_word_tclk,
 
@@ -192,7 +198,7 @@ BEGIN
 	)
 	PORT MAP(
 		clk 			=> clk,
-		init 			=> init,
+		init 			=> tx_init,
 	
 		freq_word 		=> freq_word_f1,
 
@@ -217,7 +223,7 @@ BEGIN
 	)
 	PORT MAP(
 		clk 			=> clk,
-		init 			=> init,
+		init 			=> tx_init,
 	
 		phase 			=> carrier_phase_f1(NCO_W -1 DOWNTO NCO_W - PHASE_W),
 
@@ -231,7 +237,7 @@ BEGIN
 	)
 	PORT MAP(
 		clk 			=> clk,
-		init 			=> init,
+		init 			=> tx_init,
 	
 		freq_word 		=> freq_word_f2,
 
@@ -256,7 +262,7 @@ BEGIN
 	)
 	PORT MAP(
 		clk 			=> clk,
-		init 			=> init,
+		init 			=> tx_init,
 	
 		phase 			=> carrier_phase_f2(NCO_W -1 DOWNTO NCO_W - PHASE_W),
 
