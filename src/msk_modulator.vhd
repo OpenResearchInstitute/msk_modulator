@@ -156,12 +156,16 @@ BEGIN
 	BEGIN
 		IF clk'EVENT AND clk = '1' THEN
 
-			tclk_dly <= tclk & tclk_dly(0 TO 2);
+			IF tx_valid = '1' THEN
 
-			IF tclk_dly(0) = '1' AND ptt = '1' THEN
-				tx_data_reg	<= tx_data;
+				tclk_dly <= tclk & tclk_dly(0 TO 2);
+	
+				IF tclk_dly(0) = '1' AND ptt = '1' THEN
+					tx_data_reg	<= tx_data;
+				END IF;
+
 			END IF;
-
+	
 			IF tx_init = '1' THEN 
 				tclk_dly 	<= (OTHERS => '0');
 				tx_data_reg	<= '0';
@@ -192,17 +196,21 @@ BEGIN
 	BEGIN
 		IF clk'EVENT AND clk = '1' THEN
 
-			IF tclk_dly(0) = '1' THEN 
+			IF tx_valid = '1' THEN
 
-				b_n 	<= NOT b_n; 						-- b[n] = (-1)^n
-				d_dly 	<= d_val;
-
-			END IF;
-
-			IF tclk_dly(1) = '1' THEN
-
-				d_s1 	<= d_pos;
-				d_s2 	<= d_n_b;
+				IF tclk_dly(0) = '1' THEN 
+	
+					b_n 	<= NOT b_n; 						-- b[n] = (-1)^n
+					d_dly 	<= d_val;
+	
+				END IF;
+	
+				IF tclk_dly(1) = '1' THEN
+	
+					d_s1 	<= d_pos;
+					d_s2 	<= d_n_b;
+	
+				END IF;
 
 			END IF;
 
@@ -233,30 +241,34 @@ BEGIN
 	BEGIN
 		IF clk'EVENT AND clk = '1' THEN
 
-			v_cos_f1_d 	:= carrier_cos_f1_dly(2);
-			v_cos_f1_n 	:= NOT(carrier_cos_f1_dly(2)) + 1;
-			v_cos_f2_d 	:= carrier_cos_f2_dly(2);
-			v_cos_f2_n 	:= NOT(carrier_cos_f2_dly(2)) + 1;
+			IF tx_valid = '1' THEN
 
-			carrier_cos_f1_dly 	<= signed(carrier_cos_f1) & carrier_cos_f1_dly(0 TO 1);
-			carrier_cos_f2_dly 	<= signed(carrier_cos_f2) & carrier_cos_f2_dly(0 TO 1);
+				v_cos_f1_d 	:= carrier_cos_f1_dly(2);
+				v_cos_f1_n 	:= NOT(carrier_cos_f1_dly(2)) + 1;
+				v_cos_f2_d 	:= carrier_cos_f2_dly(2);
+				v_cos_f2_n 	:= NOT(carrier_cos_f2_dly(2)) + 1;
 
-			CASE d_s1 IS 
-				WHEN "11" 	=> s1 <= resize(v_cos_f1_n, SINUSOID_W); 	-- Multiply by -1
-				WHEN "01" 	=> s1 <= resize(v_cos_f1_d, SINUSOID_W);	-- Multiply by +1
-				WHEN OTHERS => s1 <= (OTHERS => '0'); 					-- Multiply by  0
-			END CASE;
+				carrier_cos_f1_dly 	<= signed(carrier_cos_f1) & carrier_cos_f1_dly(0 TO 1);
+				carrier_cos_f2_dly 	<= signed(carrier_cos_f2) & carrier_cos_f2_dly(0 TO 1);
 
-			CASE d_s2 IS 
-				WHEN "11" 	=> s2 <= resize(v_cos_f2_n, SINUSOID_W); 	-- Multiply by -1
-				WHEN "01" 	=> s2 <= resize(v_cos_f2_d, SINUSOID_W);	-- Multiply by +1
-				WHEN OTHERS => s2 <= (OTHERS => '0');					-- Multiply by  0
-			END CASE;
+				CASE d_s1 IS 
+					WHEN "11" 	=> s1 <= resize(v_cos_f1_n, SINUSOID_W); 	-- Multiply by -1
+					WHEN "01" 	=> s1 <= resize(v_cos_f1_d, SINUSOID_W);	-- Multiply by +1
+					WHEN OTHERS => s1 <= (OTHERS => '0'); 					-- Multiply by  0
+				END CASE;
 
-			IF ptt = '1' THEN
-				tx_samples <= std_logic_vector(resize(s1 + s2, SAMPLE_W));
-			ELSE
-				tx_samples <= (OTHERS => '0');
+				CASE d_s2 IS 
+					WHEN "11" 	=> s2 <= resize(v_cos_f2_n, SINUSOID_W); 	-- Multiply by -1
+					WHEN "01" 	=> s2 <= resize(v_cos_f2_d, SINUSOID_W);	-- Multiply by +1
+					WHEN OTHERS => s2 <= (OTHERS => '0');					-- Multiply by  0
+				END CASE;
+
+				IF ptt = '1' THEN
+					tx_samples <= std_logic_vector(resize(s1 + s2, SAMPLE_W));
+				ELSE
+					tx_samples <= (OTHERS => '0');
+				END IF;
+
 			END IF;
 
 			IF tx_init = '1' THEN
@@ -283,6 +295,8 @@ BEGIN
 	PORT MAP(
 		clk 			=> clk,
 		init 			=> tx_init,
+
+		enable 			=> tx_valid,
 	
 		freq_word 		=> freq_word_tclk,
 
@@ -315,6 +329,8 @@ BEGIN
 	PORT MAP(
 		clk 			=> clk,
 		init 			=> tx_init,
+
+		enable 			=> tx_valid,
 	
 		freq_word 		=> freq_word_f1,
 
@@ -364,6 +380,8 @@ BEGIN
 		clk 			=> clk,
 		init 			=> tx_init,
 	
+		enable 			=> tx_valid,
+
 		freq_word 		=> freq_word_f2,
 
 		freq_adj_zero   => '0',
