@@ -109,17 +109,14 @@ ARCHITECTURE rtl OF msk_modulator IS
 
 	SIGNAL tx_init 			: std_logic;
 
-	SIGNAL tclk_even		: std_logic;
-	SIGNAL tclk_odd 		: std_logic;
-
 	SIGNAL tclk 			: std_logic;
 
 	SIGNAL carrier_phase_f1	: std_logic_vector(NCO_W -1 DOWNTO 0);
 	SIGNAL carrier_phase_f2	: std_logic_vector(NCO_W -1 DOWNTO 0);
-	SIGNAL carrier_cos_f1	: std_logic_vector(SINUSOID_W -1 DOWNTO 0);
-	SIGNAL carrier_cos_f2	: std_logic_vector(SINUSOID_W -1 DOWNTO 0);
-	SIGNAL carrier_cos_f1_dly 	: signed_array;
-	SIGNAL carrier_cos_f2_dly 	: signed_array;
+	SIGNAL carrier_sin_f1	: std_logic_vector(SINUSOID_W -1 DOWNTO 0);
+	SIGNAL carrier_sin_f2	: std_logic_vector(SINUSOID_W -1 DOWNTO 0);
+	SIGNAL carrier_sin_f1_dly 	: signed_array;
+	SIGNAL carrier_sin_f2_dly 	: signed_array;
 
 	SIGNAL tclk_dly 		: std_logic_vector(0 TO 3);
 
@@ -139,7 +136,6 @@ BEGIN
 
 
 	tx_init 	<= init OR NOT tx_enable;
-	tclk 	 	<= tclk_even OR tclk_odd;
 
 
 ------------------------------------------------------------------------------------------------------
@@ -188,9 +184,13 @@ BEGIN
 	d_pos <= resize(shift_right(d_val + d_dly, 1), 2);
 	d_neg <= resize(shift_right(d_val - d_dly, 1), 2);
 
-	b_val <= "01" WHEN b_n = '0' ELSE "11";
-
-	d_n_b <= resize(d_neg * b_val, 2);
+	-- The following implements a multiplier as a mux
+	-- d_n_b <= d_neg * b_n (when both d_neg is in {-1,0,+1} and b_n is in {-1,+1}
+	d_n_b <= "00" WHEN d_neg = "00" ELSE
+	         "01" WHEN d_neg = "01" AND b_n = '0' ELSE
+	         "11" WHEN d_neg = "01" AND b_n = '1' ELSE
+	         "11" WHEN d_neg = "11" AND b_n = '0' ELSE
+	         "01";
 
 	enc_proc : PROCESS (clk)
 	BEGIN
@@ -215,7 +215,7 @@ BEGIN
 			END IF;
 
 			IF tx_init = '1' THEN
-				b_n 	<= '0';
+				b_n 	<= '1';
 				d_dly 	<= "001";
 				d_s1 	<= "00";
 				d_s2	<= "00";
@@ -243,13 +243,13 @@ BEGIN
 
 			IF tx_valid = '1' THEN
 
-				v_cos_f1_d 	:= carrier_cos_f1_dly(2);
-				v_cos_f1_n 	:= NOT(carrier_cos_f1_dly(2)) + 1;
-				v_cos_f2_d 	:= carrier_cos_f2_dly(2);
-				v_cos_f2_n 	:= NOT(carrier_cos_f2_dly(2)) + 1;
+				v_cos_f1_d 	:= carrier_sin_f1_dly(2);
+				v_cos_f1_n 	:= NOT(carrier_sin_f1_dly(2)) + 1;
+				v_cos_f2_d 	:= carrier_sin_f2_dly(2);
+				v_cos_f2_n 	:= NOT(carrier_sin_f2_dly(2)) + 1;
 
-				carrier_cos_f1_dly 	<= signed(carrier_cos_f1) & carrier_cos_f1_dly(0 TO 1);
-				carrier_cos_f2_dly 	<= signed(carrier_cos_f2) & carrier_cos_f2_dly(0 TO 1);
+				carrier_sin_f1_dly 	<= signed(carrier_sin_f1) & carrier_sin_f1_dly(0 TO 1);
+				carrier_sin_f2_dly 	<= signed(carrier_sin_f2) & carrier_sin_f2_dly(0 TO 1);
 
 				CASE d_s1 IS 
 					WHEN "11" 	=> s1 <= resize(v_cos_f1_n, SINUSOID_W); 	-- Multiply by -1
@@ -308,9 +308,9 @@ BEGIN
 		rollover_pi2 	=> OPEN,
 		rollover_pi 	=> OPEN,
 		rollover_3pi2 	=> OPEN,
-		rollover_2pi 	=> OPEN,
-		tclk_even		=> tclk_even,
-		tclk_odd		=> tclk_odd
+		rollover_2pi 	=> tclk,
+		tclk_even		=> OPEN,
+		tclk_odd		=> OPEN
 	);
 
 
@@ -359,8 +359,8 @@ BEGIN
 	
 		phase 			=> carrier_phase_f1(NCO_W -1 DOWNTO NCO_W - PHASE_W),
 
-		sin_out			=> OPEN,
-		cos_out			=> carrier_cos_f1
+		sin_out			=> carrier_sin_f1,
+		cos_out			=> OPEN
 	);
 
 
@@ -409,8 +409,8 @@ BEGIN
 	
 		phase 			=> carrier_phase_f2(NCO_W -1 DOWNTO NCO_W - PHASE_W),
 
-		sin_out			=> OPEN,
-		cos_out			=> carrier_cos_f2
+		sin_out			=> carrier_sin_f2,
+		cos_out			=> OPEN
 	);
 
 
