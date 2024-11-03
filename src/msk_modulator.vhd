@@ -298,6 +298,7 @@ BEGIN
 
 		enable 			=> tx_valid,
 	
+		discard_nco 	=> std_logic_vector(to_unsigned(0, 8)),
 		freq_word 		=> freq_word_tclk,
 
 		freq_adj_zero   => '0',
@@ -334,6 +335,7 @@ BEGIN
 	
 		freq_word 		=> freq_word_f1,
 
+		discard_nco 	=> std_logic_vector(to_unsigned(0, 8)),
 		freq_adj_zero   => '0',
 		freq_adj_valid  => '0',
 		freq_adjust 	=> std_logic_vector(to_signed(0, NCO_W)),
@@ -384,6 +386,7 @@ BEGIN
 
 		freq_word 		=> freq_word_f2,
 
+		discard_nco 	=> std_logic_vector(to_unsigned(0, 8)),
 		freq_adj_zero   => '0',
 		freq_adj_valid  => '0',
 		freq_adjust 	=> std_logic_vector(to_signed(0, NCO_W)),
