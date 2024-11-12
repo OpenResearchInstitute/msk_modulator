@@ -132,13 +132,13 @@ ARCHITECTURE rtl OF msk_modulator IS
 
 	SIGNAL b_n 				: std_logic;
 
-	attribute mark_debug_valid 			: string;
+	attribute mark_debug 				: string;
 	attribute mark_debug_depth 			: string;
-	attribute mark_debug_depth of s1 	: signal is "4096";
-	attribute mark_debug_valid of d_s1 	: signal is "true";
-	attribute mark_debug_valid of d_s2 	: signal is "true";
-	attribute mark_debug_valid of s1 	: signal is "true";
-	attribute mark_debug_valid of s2 	: signal is "true";
+	attribute mark_debug_depth of s1	: signal is "4096";
+	attribute mark_debug of d_s1 		: signal is "true";
+	attribute mark_debug of d_s2 		: signal is "true";
+	attribute mark_debug of s1 			: signal is "true";
+	attribute mark_debug of s2 			: signal is "true";
 
 BEGIN
 
