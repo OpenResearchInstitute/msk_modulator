@@ -134,7 +134,19 @@ ARCHITECTURE rtl OF msk_modulator IS
 
 	attribute mark_debug 				: string;
 	attribute mark_debug_depth 			: string;
-	attribute mark_debug_depth of s1	: signal is "4096";
+	attribute mark_debug_depth of s1	: signal is "8192";
+	attribute mark_debug of tx_data		: signal is "true";
+	attribute mark_debug of tx_data_reg	: signal is "true";
+	attribute mark_debug of tx_req 		: signal is "true";
+	attribute mark_debug of tx_enable	: signal is "true";
+	attribute mark_debug of tx_samples	: signal is "true";
+	attribute mark_debug of ptt 		: signal is "true";
+	attribute mark_debug of d_val 		: signal is "true";
+	attribute mark_debug of d_dly 		: signal is "true";
+	attribute mark_debug of d_pos 		: signal is "true";
+	attribute mark_debug of d_neg 		: signal is "true";
+	attribute mark_debug of d_n_b 		: signal is "true";
+	attribute mark_debug of b_n 		: signal is "true";
 	attribute mark_debug of d_s1 		: signal is "true";
 	attribute mark_debug of d_s2 		: signal is "true";
 	attribute mark_debug of s1 			: signal is "true";
