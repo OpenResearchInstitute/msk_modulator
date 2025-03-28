@@ -132,8 +132,8 @@ ARCHITECTURE rtl OF msk_modulator IS
 	SIGNAL tx_data_reg			: std_logic;
 
 	SIGNAL d_val 		 		: signed(2 DOWNTO 0);
+	SIGNAL d_val_t 				: signed(2 DOWNTO 0);
 	SIGNAL d_pos, d_neg 		: signed(1 DOWNTO 0);
-	SIGNAL d_enc, d_enc_t		: signed(1 DOWNTO 0);
 	SIGNAL d_n_b 				: signed(1 DOWNTO 0);
 	SIGNAL d_pos_enc 			: signed(1 DOWNTO 0);
 	SIGNAL d_neg_enc 			: signed(1 DOWNTO 0);
@@ -149,7 +149,7 @@ ARCHITECTURE rtl OF msk_modulator IS
 	SIGNAL sync_counter 		: unsigned(SYNC_CNT_W -1 DOWNTO 0);
 	SIGNAL sync_counter_next 	: unsigned(SYNC_CNT_W -1 DOWNTO 0);
 
-	CONSTANT sync_nibble 		: std_logic_vector(3 DOWNTO 0) := "1100";
+	CONSTANT sync_nibble 		: std_logic_vector(3 DOWNTO 0) := "0010";
 
 BEGIN
 
@@ -215,23 +215,11 @@ BEGIN
 
 	d_val <= "001" WHEN tx_data_reg = '0' ELSE "111";  -- 0 -> 1 and 1 -> -1
 
-	d_pos <= resize(shift_right(d_val + 1, 1), 2);
-	d_neg <= resize(shift_right(d_val - 1, 1), 2);
+	d_pos 	<= resize(shift_right(d_val + d_val_t, 1), 2);
+	d_neg 	<= resize(shift_right(d_val - d_val_t, 1), 2);
 
-	-- The following implements a multiplier as a mux
-	d_enc <= "01" WHEN tx_data_reg = '0' AND d_enc_t = "01" ELSE
-	         "01" WHEN tx_data_reg = '1' AND d_enc_t = "11" ELSE
-	         "11";
-
-	-- The following implements a multiplier as a mux
-	-- d_n_b <= d_neg * b_n (when both d_neg is in {-1,0,+1} and b_n is in {-1,+1}
-	d_n_b <= "00" WHEN d_neg = "00" ELSE
-			 "01" WHEN d_neg = "01" AND b_n = '0' ELSE
-			 "01" WHEN d_neg = "11" AND b_n = '1' ELSE
-			 "11";
-
-	d_pos_enc <= d_pos WHEN d_enc_t = "01" ELSE NOT(d_pos) + 1;
-	d_neg_enc <= d_n_b WHEN d_enc_t = "01" ELSE NOT(d_n_b) + 1;
+	d_pos_enc <= d_pos;
+	d_neg_enc <= d_neg WHEN (b_n = '0') ELSE (NOT(d_neg) + 1);
 
 	enc_proc : PROCESS (clk)
 	BEGIN
@@ -240,9 +228,10 @@ BEGIN
 			IF tx_valid = '1' THEN
 
 				IF tclk_dly(0) = '1' THEN 
+
+					d_val_t <= d_val;
 	
 					b_n 	<= NOT b_n;					-- b[n] = (-1)^n
-					d_enc_t	<= d_enc;
 	
 				END IF;
 	
@@ -256,8 +245,8 @@ BEGIN
 			END IF;
 
 			IF tx_init = '1' THEN
+				d_val_t <= "000";
 				b_n 	<= '1';
-				d_enc_t	<= "01";
 				d_s1 	<= "00";
 				d_s2	<= "00";
 			END IF;
