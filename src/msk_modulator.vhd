@@ -93,6 +93,10 @@ ENTITY msk_modulator IS
 		tx_sync_cnt 		: IN  std_logic_vector(SYNC_CNT_W -1 DOWNTO 0);
 		tx_sync_force		: IN  std_logic;
 
+		tx_enc_lbk_tclk 	: OUT std_logic;
+		tx_enc_lbk_f1 		: OUT std_logic_vector(1 DOWNTO 0);
+		tx_enc_lbk_f2 		: OUT std_logic_vector(1 DOWNTO 0);
+
 		tx_enable 			: IN  std_logic;
 		tx_valid 			: IN  std_logic;
 		tx_samples_I		: OUT std_logic_vector(SAMPLE_W -1 DOWNTO 0);
@@ -132,11 +136,14 @@ ARCHITECTURE rtl OF msk_modulator IS
 	SIGNAL tx_data_reg			: std_logic;
 
 	SIGNAL d_val 		 		: signed(2 DOWNTO 0);
-	SIGNAL d_val_t 				: signed(2 DOWNTO 0);
+	SIGNAL d_val_xor			: signed(2 DOWNTO 0);
+	SIGNAL d_val_xor_T 			: signed(2 DOWNTO 0);
 	SIGNAL d_pos, d_neg 		: signed(1 DOWNTO 0);
 	SIGNAL d_n_b 				: signed(1 DOWNTO 0);
 	SIGNAL d_pos_enc 			: signed(1 DOWNTO 0);
 	SIGNAL d_neg_enc 			: signed(1 DOWNTO 0);
+	SIGNAL d_pos_xor 			: signed(1 DOWNTO 0);
+	SIGNAL d_neg_xor 			: signed(1 DOWNTO 0);
 	SIGNAL d_s1, d_s2 			: signed(1 DOWNTO 0);
 
 	SIGNAL s1s, s2s				: signed(SINUSOID_W -1 DOWNTO 0);
@@ -149,7 +156,7 @@ ARCHITECTURE rtl OF msk_modulator IS
 	SIGNAL sync_counter 		: unsigned(SYNC_CNT_W -1 DOWNTO 0);
 	SIGNAL sync_counter_next 	: unsigned(SYNC_CNT_W -1 DOWNTO 0);
 
-	CONSTANT sync_nibble 		: std_logic_vector(3 DOWNTO 0) := "0010";
+	CONSTANT sync_nibble 		: std_logic_vector(3 DOWNTO 0) := "0101";
 
 BEGIN
 
@@ -215,11 +222,29 @@ BEGIN
 
 	d_val <= "001" WHEN tx_data_reg = '0' ELSE "111";  -- 0 -> 1 and 1 -> -1
 
-	d_pos 	<= resize(shift_right(d_val + d_val_t, 1), 2);
-	d_neg 	<= resize(shift_right(d_val - d_val_t, 1), 2);
+	d_val_xor <= "001" WHEN d_val = "001" AND d_val_xor_T = "001" ELSE
+	             "111" WHEN d_val = "001" AND d_val_xor_T = "111" ELSE
+	             "111" WHEN d_val = "111" AND d_val_xor_T = "001" ELSE
+	             "001";
+
+	d_pos 	<= resize(shift_right(d_val + 1, 1), 2);
+	d_neg 	<= resize(shift_right(d_val - 1, 1), 2);
 
 	d_pos_enc <= d_pos;
 	d_neg_enc <= d_neg WHEN (b_n = '0') ELSE (NOT(d_neg) + 1);
+
+	d_pos_xor <= "01" WHEN d_pos_enc = "01" AND d_val_xor_T = "001" ELSE
+	             "11" WHEN d_pos_enc = "01" AND d_val_xor_T = "111" ELSE
+	             "00";
+	d_neg_xor <= "11" WHEN d_neg_enc = "11" AND d_val_xor_T = "001" ELSE
+				 "01" WHEN d_neg_enc = "11" AND d_val_xor_T = "111" ELSE
+				 "01" WHEN d_neg_enc = "01" AND d_val_xor_T = "001" ELSE
+				 "11" WHEN d_neg_enc = "01" AND d_val_xor_T = "111" ELSE
+				 "00";
+
+	tx_enc_lbk_f1 	<= std_logic_vector(d_s1);
+	tx_enc_lbk_f2 	<= std_logic_vector(d_s2);
+	tx_enc_lbk_tclk <= tclk_dly(1);
 
 	enc_proc : PROCESS (clk)
 	BEGIN
@@ -229,7 +254,7 @@ BEGIN
 
 				IF tclk_dly(0) = '1' THEN 
 
-					d_val_t <= d_val;
+					d_val_xor_T <= d_val_xor;
 	
 					b_n 	<= NOT b_n;					-- b[n] = (-1)^n
 	
@@ -237,18 +262,18 @@ BEGIN
 	
 				IF tclk_dly(1) = '1' THEN
 	
-					d_s1 	<= d_pos_enc;
-					d_s2 	<= d_neg_enc;
+					d_s1 	<= d_pos_xor;
+					d_s2 	<= d_neg_xor;
 	
 				END IF;
 
 			END IF;
 
 			IF tx_init = '1' THEN
-				d_val_t <= "000";
-				b_n 	<= '1';
-				d_s1 	<= "00";
-				d_s2	<= "00";
+				d_val_xor_T <= "000";
+				b_n 		<= '1';
+				d_s1 		<= "00";
+				d_s2		<= "00";
 			END IF;
 
 		END IF;
