@@ -75,7 +75,8 @@ ENTITY msk_modulator IS
 		PHASE_W 		: NATURAL := 10;
 		SINUSOID_W 		: NATURAL := 12;
 		SAMPLE_W 		: NATURAL := 12;
-		SYNC_CNT_W 		: NATURAL := 24
+		SYNC_CNT_W 		: NATURAL := 24;
+		SYNC_PAT_W 		: NATURAL := 16
 	);
 	PORT (
 		clk 				: IN  std_logic;
@@ -92,6 +93,7 @@ ENTITY msk_modulator IS
 		tx_sync_ena 		: IN  std_logic;
 		tx_sync_cnt 		: IN  std_logic_vector(SYNC_CNT_W -1 DOWNTO 0);
 		tx_sync_force		: IN  std_logic;
+		tx_sync_pat 		: IN  std_logic_vector(SYNC_PAT_W -1 DOWNTO 0);
 
 		tx_enc_lbk_tclk 	: OUT std_logic;
 		tx_enc_lbk_f1 		: OUT std_logic_vector(1 DOWNTO 0);
@@ -154,9 +156,6 @@ ARCHITECTURE rtl OF msk_modulator IS
 	SIGNAL ptt_d 				: std_logic;
 	SIGNAL ptt_pulse 			: std_logic;
 	SIGNAL sync_counter 		: unsigned(SYNC_CNT_W -1 DOWNTO 0);
-	SIGNAL sync_counter_next 	: unsigned(SYNC_CNT_W -1 DOWNTO 0);
-
-	CONSTANT sync_nibble 		: std_logic_vector(3 DOWNTO 0) := "0101";
 
 BEGIN
 
@@ -174,7 +173,6 @@ BEGIN
 
 	tx_req 				<= tclk WHEN ptt = '1' ELSE '0';
 	ptt_pulse 			<= ptt AND NOT ptt_d;
-	sync_counter_next 	<= sync_counter -1 WHEN sync_counter > 0 ELSE sync_counter;
 
 	get_data_proc : PROCESS (clk)
 	BEGIN
@@ -192,8 +190,8 @@ BEGIN
 	
 				IF tclk_dly(0) = '1' AND ptt = '1' THEN
 					IF sync_counter > 0 OR tx_sync_force = '1' THEN
-						tx_data_reg <= sync_nibble(to_integer(sync_counter(1 DOWNTO 0)));
-						sync_counter <= sync_counter_next;
+						tx_data_reg <= tx_sync_pat(to_integer(sync_counter(3 DOWNTO 0)));
+						sync_counter <= sync_counter -1;
 					ELSE
 						tx_data_reg	<= tx_data;
 					END IF;
