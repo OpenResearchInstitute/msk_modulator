@@ -171,7 +171,7 @@ BEGIN
 ------------------------------------------------------------------------------------------------------
 -- Data Input
 
-	tx_req 				<= tclk WHEN ptt = '1' ELSE '0';
+	tx_req 				<= tclk WHEN ptt = '1' AND tx_sync_force = '0' AND sync_counter = 0 ELSE '0';
 	ptt_pulse 			<= ptt AND NOT ptt_d;
 
 	get_data_proc : PROCESS (clk)
