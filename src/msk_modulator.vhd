@@ -99,6 +99,8 @@ ENTITY msk_modulator IS
 		tx_enc_lbk_f1 		: OUT std_logic_vector(1 DOWNTO 0);
 		tx_enc_lbk_f2 		: OUT std_logic_vector(1 DOWNTO 0);
 
+		tx_shift 			: IN  std_logic_vector(2 DOWNTO 0);
+
 		tx_enable 			: IN  std_logic;
 		tx_valid 			: IN  std_logic;
 		tx_samples_I		: OUT std_logic_vector(SAMPLE_W -1 DOWNTO 0);
@@ -333,13 +335,12 @@ BEGIN
 				END CASE;
 
 				IF ptt = '1' THEN
-					tx_samples_I <= std_logic_vector(resize(s1s + s2s, SAMPLE_W));
-					tx_samples_Q <= std_logic_vector(resize(s1c + s2c, SAMPLE_W));
+					tx_samples_I <= std_logic_vector(shift_left(resize(s1s + s2s, SAMPLE_W),to_integer(unsigned(tx_shift))));
+					tx_samples_Q <= std_logic_vector(shift_left(resize(s1c + s2c, SAMPLE_W),to_integer(unsigned(tx_shift))));
 				ELSE
 					tx_samples_I <= (OTHERS => '0');
 					tx_samples_Q <= (OTHERS => '0');
 				END IF;
-
 			END IF;
 
 			IF tx_init = '1' THEN
