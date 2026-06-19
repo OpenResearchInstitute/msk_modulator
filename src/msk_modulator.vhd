@@ -51,9 +51,9 @@
 
 
 ------------------------------------------------------------------------------------------------------
--- ╦  ┬┌┐ ┬─┐┌─┐┬─┐┬┌─┐┌─┐
--- ║  │├┴┐├┬┘├─┤├┬┘│├┤ └─┐
--- ╩═╝┴└─┘┴└─┴ ┴┴└─┴└─┘└─┘
+-- ?  ??? ????????????????
+-- ?  ???????????????? ???
+-- ??????????? ???????????
 ------------------------------------------------------------------------------------------------------
 -- Libraries
 
@@ -63,9 +63,9 @@ USE ieee.numeric_std.ALL;
 
 
 ------------------------------------------------------------------------------------------------------
--- ╔═╗┌┐┌┌┬┐┬┌┬┐┬ ┬
--- ║╣ │││ │ │ │ └┬┘
--- ╚═╝┘└┘ ┴ ┴ ┴  ┴ 
+-- ?????????????? ?
+-- ?? ??? ? ? ? ???
+-- ?????? ? ? ?  ? 
 ------------------------------------------------------------------------------------------------------
 -- Entity
 
@@ -99,6 +99,8 @@ ENTITY msk_modulator IS
 		tx_enc_lbk_f1 		: OUT std_logic_vector(1 DOWNTO 0);
 		tx_enc_lbk_f2 		: OUT std_logic_vector(1 DOWNTO 0);
 
+		tx_shift 			: IN  std_logic_vector(2 DOWNTO 0);
+
 		tx_enable 			: IN  std_logic;
 		tx_valid 			: IN  std_logic;
 		tx_samples_I		: OUT std_logic_vector(SAMPLE_W -1 DOWNTO 0);
@@ -108,30 +110,23 @@ END ENTITY msk_modulator;
 
 
 ------------------------------------------------------------------------------------------------------
--- ╔═╗┬─┐┌─┐┬ ┬┬┌┬┐┌─┐┌─┐┌┬┐┬ ┬┬─┐┌─┐
--- ╠═╣├┬┘│  ├─┤│ │ ├┤ │   │ │ │├┬┘├┤ 
--- ╩ ╩┴└─└─┘┴ ┴┴ ┴ └─┘└─┘ ┴ └─┘┴└─└─┘
+-- ?????????? ??????????????? ???????
+-- ???????  ???? ? ?? ?   ? ? ?????? 
+-- ? ???????? ?? ? ?????? ? ?????????
 ------------------------------------------------------------------------------------------------------
 -- Architecture
 
 ARCHITECTURE rtl OF msk_modulator IS 
 
-	TYPE signed_array IS ARRAY(0 TO 2) OF signed(SINUSOID_W -1 DOWNTO 0);
 
 	SIGNAL tx_init 				: std_logic;
 
 	SIGNAL tclk 				: std_logic;
 
-	SIGNAL carrier_phase_f1		: std_logic_vector(NCO_W -1 DOWNTO 0);
-	SIGNAL carrier_phase_f2		: std_logic_vector(NCO_W -1 DOWNTO 0);
-	SIGNAL carrier_sin_f1		: std_logic_vector(SINUSOID_W -1 DOWNTO 0);
-	SIGNAL carrier_sin_f2		: std_logic_vector(SINUSOID_W -1 DOWNTO 0);
-	SIGNAL carrier_sin_f1_dly 	: signed_array;
-	SIGNAL carrier_sin_f2_dly 	: signed_array;
-	SIGNAL carrier_cos_f1		: std_logic_vector(SINUSOID_W -1 DOWNTO 0);
-	SIGNAL carrier_cos_f2		: std_logic_vector(SINUSOID_W -1 DOWNTO 0);
-	SIGNAL carrier_cos_f1_dly 	: signed_array;
-	SIGNAL carrier_cos_f2_dly 	: signed_array;
+	SIGNAL carrier_freq_word	: std_logic_vector(NCO_W -1 DOWNTO 0);
+	SIGNAL carrier_phase		: std_logic_vector(NCO_W -1 DOWNTO 0);
+	SIGNAL carrier_sin			: std_logic_vector(SINUSOID_W -1 DOWNTO 0);
+	SIGNAL carrier_cos			: std_logic_vector(SINUSOID_W -1 DOWNTO 0);
 
 	SIGNAL tclk_dly 			: std_logic_vector(0 TO 3);
 
@@ -148,8 +143,6 @@ ARCHITECTURE rtl OF msk_modulator IS
 	SIGNAL d_neg_xor 			: signed(1 DOWNTO 0);
 	SIGNAL d_s1, d_s2 			: signed(1 DOWNTO 0);
 
-	SIGNAL s1s, s2s				: signed(SINUSOID_W -1 DOWNTO 0);
-	SIGNAL s1c, s2c				: signed(SINUSOID_W -1 DOWNTO 0);
 
 	SIGNAL b_n 					: std_logic;
 
@@ -276,84 +269,6 @@ BEGIN
 
 		END IF;
 	END PROCESS enc_proc;
-
-
-------------------------------------------------------------------------------------------------------
---  __       __   __     __  __          __   __                ___    __       
--- /    /\  |__) |__) | |_  |__)   |\/| /  \ |  \ /  \ |    /\   |  | /  \ |\ | 
--- \__ /--\ | \  | \  | |__ | \    |  | \__/ |__/ \__/ |__ /--\  |  | \__/ | \| 
---                                                                              
-------------------------------------------------------------------------------------------------------
--- Carrier Modulation
-
-	carrier_mod_proc : PROCESS (clk)
-		VARIABLE v_sin_f1_d : signed(SINUSOID_W -1 DOWNTO 0);
-		VARIABLE v_sin_f1_n : signed(SINUSOID_W -1 DOWNTO 0);
-		VARIABLE v_sin_f2_d : signed(SINUSOID_W -1 DOWNTO 0);
-		VARIABLE v_sin_f2_n : signed(SINUSOID_W -1 DOWNTO 0);
-		VARIABLE v_cos_f1_d : signed(SINUSOID_W -1 DOWNTO 0);
-		VARIABLE v_cos_f1_n : signed(SINUSOID_W -1 DOWNTO 0);
-		VARIABLE v_cos_f2_d : signed(SINUSOID_W -1 DOWNTO 0);
-		VARIABLE v_cos_f2_n : signed(SINUSOID_W -1 DOWNTO 0);
-	BEGIN
-		IF clk'EVENT AND clk = '1' THEN
-
-			IF tx_valid = '1' THEN
-
-				v_sin_f1_d 	:= carrier_sin_f1_dly(2);
-				v_sin_f1_n 	:= NOT(carrier_sin_f1_dly(2)) + 1;
-				v_sin_f2_d 	:= carrier_sin_f2_dly(2);
-				v_sin_f2_n 	:= NOT(carrier_sin_f2_dly(2)) + 1;
-				v_cos_f1_d 	:= carrier_cos_f1_dly(2);
-				v_cos_f1_n 	:= NOT(carrier_cos_f1_dly(2)) + 1;
-				v_cos_f2_d 	:= carrier_cos_f2_dly(2);
-				v_cos_f2_n 	:= NOT(carrier_cos_f2_dly(2)) + 1;
-
-				carrier_sin_f1_dly 	<= signed(carrier_sin_f1) & carrier_sin_f1_dly(0 TO 1);
-				carrier_sin_f2_dly 	<= signed(carrier_sin_f2) & carrier_sin_f2_dly(0 TO 1);
-				carrier_cos_f1_dly 	<= signed(carrier_cos_f1) & carrier_cos_f1_dly(0 TO 1);
-				carrier_cos_f2_dly 	<= signed(carrier_cos_f2) & carrier_cos_f2_dly(0 TO 1);
-
-				CASE d_s1 IS 
-					WHEN "11" 	=> s1c <= resize(v_cos_f1_n, SINUSOID_W); 	-- Multiply by -1
-								   s1s <= resize(v_sin_f1_n, SINUSOID_W); 
-					WHEN "01" 	=> s1c <= resize(v_cos_f1_d, SINUSOID_W);	-- Multiply by +1
-								   s1s <= resize(v_sin_f1_d, SINUSOID_W);
-					WHEN OTHERS => s1c <= (OTHERS => '0'); 					-- Multiply by  0
-								   s1s <= (OTHERS => '0');
-				END CASE;
-
-				CASE d_s2 IS 
-					WHEN "11" 	=> s2c <= resize(v_cos_f2_n, SINUSOID_W); 	-- Multiply by -1
-								   s2s <= resize(v_sin_f2_n, SINUSOID_W); 
-					WHEN "01" 	=> s2c <= resize(v_cos_f2_d, SINUSOID_W);	-- Multiply by +1
-								   s2s <= resize(v_sin_f2_d, SINUSOID_W);
-					WHEN OTHERS => s2c <= (OTHERS => '0'); 					-- Multiply by  0
-								   s2s <= (OTHERS => '0');
-				END CASE;
-
-				IF ptt = '1' THEN
-					tx_samples_I <= std_logic_vector(resize(s1s + s2s, SAMPLE_W));
-					tx_samples_Q <= std_logic_vector(resize(s1c + s2c, SAMPLE_W));
-				ELSE
-					tx_samples_I <= (OTHERS => '0');
-					tx_samples_Q <= (OTHERS => '0');
-				END IF;
-
-			END IF;
-
-			IF tx_init = '1' THEN
-				s1s <= (OTHERS => '0');
-				s2s <= (OTHERS => '0');
-				s1c <= (OTHERS => '0');
-				s2c <= (OTHERS => '0');
-				tx_samples_I <= (OTHERS => '0');
-				tx_samples_Q <= (OTHERS => '0');
-			END IF;
-		END IF;
-	END PROCESS carrier_mod_proc;
-
-
 ------------------------------------------------------------------------------------------------------
 --  __           __   __        ___         __         __  __  
 -- (_  \_/ |\/| |__) /  \ |      |  | |\/| |_    |\ | /   /  \ 
@@ -388,107 +303,83 @@ BEGIN
 		tclk_odd		=> OPEN
 	);
 
-
 ------------------------------------------------------------------------------------------------------
---       __  __     __     
--- |\ | /   /  \   |_   /| 
--- | \| \__ \__/   |     | 
---                         
+-- Coherent Carrier Generation (single continuous-phase accumulator)
 ------------------------------------------------------------------------------------------------------
--- NCO F1
+-- Replaces the two free-running f1/f2 oscillators + delay/select/sum.  ONE phase accumulator
+-- integrates the per-symbol frequency word.  The increment is switched between freq_word_f1
+-- (d_s1 active = data 0) and freq_word_f2 (d_s2 active = data 1) at the symbol boundary -- exactly
+-- where the original design switched tones.  The accumulator is NEVER reset on a switch, only its
+-- rate changes, so the carrier phase is CONTINUOUS across every symbol transition by construction.
+-- No swap between independent oscillators => no phase discontinuity to land off a zero crossing.
+--
+-- The f1/f2 selection mirrors the original d_s1/d_s2, which is direct from tx_data_reg, so the
+-- transmitted frequency sequence is identical and the existing demodulator decodes unchanged.
+--
+-- VERIFY BY LOOPBACK before trusting on-air:
+--   * if bits decode INVERTED, swap freq_word_f1 <-> freq_word_f2 in the select below.
+--   * if I/Q sense is wrong, swap sin_out/cos_out -> tx_samples_I/Q in out_proc.
+-- Note: tx_shift=4 is the max safe shift (2047*16 = 32752 < full scale); a single tone never
+-- overflows the way the old s1s+s2s sum could.
+------------------------------------------------------------------------------------------------------
 
-	U_f1_nco : ENTITY work.nco(rtl)
-	GENERIC MAP(
-		NCO_W 			=> NCO_W
+	carrier_freq_word <= freq_word_f2 WHEN d_s2 /= "00" ELSE freq_word_f1;
+
+	U_carrier_nco : ENTITY work.nco(rtl)
+	GENERIC MAP (
+		NCO_W => NCO_W
 	)
-	PORT MAP(
-		clk 			=> clk,
-		init 			=> tx_init,
-
-		enable 			=> tx_valid,
-	
-		freq_word 		=> freq_word_f1,
-
-		discard_nco 	=> std_logic_vector(to_unsigned(0, 8)),
-		freq_adj_zero   => '0',
-		freq_adj_valid  => '0',
-		freq_adjust 	=> std_logic_vector(to_signed(0, NCO_W)),
-	
-		phase    		=> carrier_phase_f1,
-		rollover_pi2 	=> OPEN,
-		rollover_pi 	=> OPEN,
-		rollover_3pi2 	=> OPEN,
-		rollover_2pi 	=> OPEN,
-		tclk_even		=> OPEN,
-		tclk_odd		=> OPEN
+	PORT MAP (
+		clk            => clk,
+		init           => tx_init,
+		enable         => tx_valid,
+		discard_nco    => std_logic_vector(to_unsigned(0, 8)),
+		freq_word      => carrier_freq_word,
+		freq_adj_zero  => '0',
+		freq_adj_valid => '0',
+		freq_adjust    => std_logic_vector(to_signed(0, NCO_W)),
+		phase          => carrier_phase,
+		rollover_pi2   => OPEN,
+		rollover_pi    => OPEN,
+		rollover_3pi2  => OPEN,
+		rollover_2pi   => OPEN,
+		tclk_even      => OPEN,
+		tclk_odd       => OPEN
 	);
 
-	U_f1_sin_cos_lut : ENTITY work.sin_cos_lut(lut_based)
-	GENERIC MAP(
-		PHASE_W 		=> PHASE_W,
-		PHASES 			=> 2**PHASE_W,
-		SINUSOID_W 		=> SINUSOID_W
+	U_carrier_sin_cos_lut : ENTITY work.sin_cos_lut(lut_based)
+	GENERIC MAP (
+		PHASE_W    => PHASE_W,
+		PHASES     => 2**PHASE_W,
+		SINUSOID_W => SINUSOID_W
 	)
-	PORT MAP(
-		clk 			=> clk,
-		init 			=> tx_init,
-	
-		phase 			=> carrier_phase_f1(NCO_W -1 DOWNTO NCO_W - PHASE_W),
-
-		sin_out			=> carrier_sin_f1,
-		cos_out			=> carrier_cos_f1
+	PORT MAP (
+		clk     => clk,
+		init    => tx_init,
+		phase   => carrier_phase(NCO_W -1 DOWNTO NCO_W - PHASE_W),
+		sin_out => carrier_sin,
+		cos_out => carrier_cos
 	);
 
-
-------------------------------------------------------------------------------------------------------
---       __  __     __  __  
--- |\ | /   /  \   |_    _) 
--- | \| \__ \__/   |    /__ 
---                          
-------------------------------------------------------------------------------------------------------
--- NCO F2
-
-	U_f2_nco : ENTITY work.nco(rtl)
-	GENERIC MAP(
-		NCO_W 			=> NCO_W
-	)
-	PORT MAP(
-		clk 			=> clk,
-		init 			=> tx_init,
-	
-		enable 			=> tx_valid,
-
-		freq_word 		=> freq_word_f2,
-
-		discard_nco 	=> std_logic_vector(to_unsigned(0, 8)),
-		freq_adj_zero   => '0',
-		freq_adj_valid  => '0',
-		freq_adjust 	=> std_logic_vector(to_signed(0, NCO_W)),
-	
-		phase    		=> carrier_phase_f2,
-		rollover_pi2 	=> OPEN,
-		rollover_pi 	=> OPEN,
-		rollover_3pi2 	=> OPEN,
-		rollover_2pi 	=> OPEN,
-		tclk_even		=> OPEN,
-		tclk_odd		=> OPEN
-	);
-
-	U_f2_sin_cos_lut : ENTITY work.sin_cos_lut(lut_based)
-	GENERIC MAP(
-		PHASE_W 		=> PHASE_W,
-		PHASES 			=> 2**PHASE_W,
-		SINUSOID_W 		=> SINUSOID_W
-	)
-	PORT MAP(
-		clk 			=> clk,
-		init 			=> tx_init,
-	
-		phase 			=> carrier_phase_f2(NCO_W -1 DOWNTO NCO_W - PHASE_W),
-
-		sin_out			=> carrier_sin_f2,
-		cos_out			=> carrier_cos_f2
-	);
+	-- Output: scale by tx_shift, gate on PTT.  I = sin, Q = cos (same convention as original).
+	out_proc : PROCESS (clk)
+	BEGIN
+		IF clk'EVENT AND clk = '1' THEN
+			IF tx_valid = '1' THEN
+				IF ptt = '1' THEN
+					tx_samples_I <= std_logic_vector(shift_left(resize(signed(carrier_sin), SAMPLE_W), to_integer(unsigned(tx_shift))));
+					tx_samples_Q <= std_logic_vector(shift_left(resize(signed(carrier_cos), SAMPLE_W), to_integer(unsigned(tx_shift))));
+				ELSE
+					tx_samples_I <= (OTHERS => '0');
+					tx_samples_Q <= (OTHERS => '0');
+				END IF;
+			END IF;
+			IF tx_init = '1' THEN
+				tx_samples_I <= (OTHERS => '0');
+				tx_samples_Q <= (OTHERS => '0');
+			END IF;
+		END IF;
+	END PROCESS out_proc;
 
 
 END ARCHITECTURE rtl;
